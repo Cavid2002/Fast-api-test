@@ -1,4 +1,4 @@
-from sqlalchemy import String, Integer, ForeignKey, Column, TIMESTAMP,create_engine
+from sqlalchemy import String, Integer, ForeignKey, Column, TIMESTAMP,create_engine,Text
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
@@ -12,6 +12,7 @@ session = Session()
 Base = declarative_base()
 
 
+
 class User(Base):
     __tablename__ = "User"
     id = Column(Integer, primary_key=True)
@@ -19,6 +20,7 @@ class User(Base):
     mail = Column(String(250), nullable=False)
     password = Column(String(250), nullable=False)
     create_time = Column(TIMESTAMP, default=datetime.utcnow())
+    
 
     def __repr__(self):
         return f"{self.id} {self.username}"
@@ -33,6 +35,20 @@ class User(Base):
         session.add(self)
         session.commit()
 
+
+class Comment(Base):
+    __tablename__ = "Comment"
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer,ForeignKey("User.id"))
+    comment_body = Column(Text)
+    creation_time = Column(TIMESTAMP, default=datetime.utcnow())  
+    
+    def __init__(self, user_id, comment_body):
+        self.user_id = user_id
+        self.comment_body = comment_body
+    
+    def __repr__(self):
+        return f"{self.id} {self.comment_body}"      
 
 
 Base.metadata.drop_all(bind=engine)
