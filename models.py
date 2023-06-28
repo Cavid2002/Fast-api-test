@@ -16,7 +16,9 @@ Base = declarative_base()
 class User(Base):
     __tablename__ = "User"
     id = Column(Integer, primary_key=True)
-    username = Column(String(50), nullable=False) 
+    username = Column(String(50), nullable=False)
+    age = Column(Integer, nullable=False) 
+    gender = Column(String(1), nullable=False)
     mail = Column(String(250), nullable=False)
     password = Column(String(250), nullable=False)
     create_time = Column(TIMESTAMP, default=datetime.utcnow())
@@ -26,11 +28,14 @@ class User(Base):
         return f"{self.id} {self.username}"
 
 
-    def __init__(self, username, mail, password):
+    def __init__(self, username, mail, password, age, gender):
         self.username = username
         self.mail = mail
         self.password = password
-    
+        self.age = age
+        self.gender = gender
+        
+        
     def save(self):
         session.add(self)
         session.commit()

@@ -1,5 +1,7 @@
 from fastapi import FastAPI
 from pydantic import BaseModel, Field
+from werkzeug.security import generate_password_hash, check_password_hash
+from models import User
 
 app = FastAPI()
 
@@ -11,12 +13,12 @@ data = [
 ]
 
 
-class User(BaseModel):
-	name: str
-	surname: str
-	age: int = Field(ge=0)
-
-
+class UserBase(BaseModel):
+	username: str
+	gender: str
+	age: int
+	email: str
+	password: str
 
 @app.get("/")
 def homepage():
@@ -40,9 +42,14 @@ def change_user_by_post(id: int, new_user: str):
     return {"code" : 200, "users" : data}
 
 @app.post("/add_user")
-def add_user(new_user: User):
-	data.append(new_user)
-	return {"status" : 200, "data" : data}
+def add_user(new_user: UserBase):
+	user = User(username = new_user.username, 
+             mail = new_user.email,
+             age = new_user.age,
+             password = generate_password_hash(new_user.password),
+             gender = new_user.gender)
+	user.save()
+	return {"status" : 200}
 
 
 
