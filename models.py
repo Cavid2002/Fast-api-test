@@ -39,6 +39,11 @@ class User(Base):
     def save(self):
         session.add(self)
         session.commit()
+        
+    @staticmethod
+    def get_user_by_id(id: str):
+        user = session.query(User).filter(User.id == id).first()
+        return user
 
 
 class Comment(Base):
@@ -55,6 +60,3 @@ class Comment(Base):
     def __repr__(self):
         return f"{self.id} {self.comment_body}"      
 
-
-Base.metadata.drop_all(bind=engine)
-Base.metadata.create_all(bind=engine)

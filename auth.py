@@ -7,7 +7,7 @@ import jwt
 
 SECRET_KEY = urandom(32).hex()
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MIN = 30
+ACCESS_TOKEN_EXPIRE_HOURS = 24
 
 class UserCreateBase(BaseModel):
 	gender: str
@@ -26,16 +26,12 @@ class UserSignInBase(BaseModel):
 def encodeJWT(userID: str):
     payload = {
         "user_id" : userID,
-        "expire":  time() + 10
     }
     token = jwt.encode(payload=payload, key=SECRET_KEY, algorithm=ALGORITHM)
-    return {"access token" : token}
+    return {"access_token" : token}
 
 
 
 def decodeJWT(token: str):
     decoded_token = jwt.decode(jwt = token, key=SECRET_KEY, algorithms=ALGORITHM)
-    if(decoded_token["expire"] <= time()):
-        return decoded_token
-    else:
-        return None
+    return decoded_token
