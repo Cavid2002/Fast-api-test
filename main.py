@@ -16,7 +16,7 @@ async def signUp(new_user: UserCreateBase):
     
     user = User(username=new_user.username,
                 password=generate_password_hash(new_user.password),
-                age = new_user.age,
+                age=new_user.age,
                 gender=new_user.gender,
                 mail=new_user.email)
     user.save()
@@ -29,7 +29,6 @@ async def signUp(new_user: UserCreateBase):
 @app.post("/")
 async def login(user_data: UserSignInBase):
     user = session.query(User).filter(User.mail == user_data.email).first()
-    print(user)
     if(user == None):
         return JSONResponse({"msg" : "User doesn't exists"})
     
@@ -45,15 +44,21 @@ async def login(user_data: UserSignInBase):
 @app.get("/main")
 async def main(request: Request):
     cookie = request.cookies.get("access_token")
-    print(cookie)
     if(cookie == None):
         return JSONResponse({"msg" : "You are not authorized!"}, status_code=401)
     else:
-        decodeJWT(cookie)
-        current_user = User.get_user_by_id(cookie["user_id"])
-        res = { "Username" : current_user.name, 
+        decoded = decodeJWT(cookie)
+        print(decoded)
+        current_user = User.get_user_by_id(decoded["user_id"])
+        res = { "Username" : current_user.username, 
                "Age" : current_user.age, 
-               "Gender" : current_user.age}
+               "Gender" : current_user.gender}
         return JSONResponse(res)
+
+@app.get("/logout")
+async def logout():
+    res = JSONResponse({ "msg" : "you logged out"})
+    res.delete_cookie("access_token")
+    return res
         
 			

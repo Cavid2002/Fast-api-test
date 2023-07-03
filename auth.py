@@ -1,18 +1,18 @@
 from pydantic import BaseModel, Field
 from os import urandom
 from time import time
-
+from os import getenv
 import jwt
 
 
-SECRET_KEY = urandom(32).hex()
+SECRET_KEY = getenv("SECRET_KEY")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_HOURS = 24
 
 class UserCreateBase(BaseModel):
-	gender: str
-	age: int
 	username: str
+	age: int
+	gender: str
 	email: str
 	password: str
 
