@@ -58,5 +58,15 @@ class Comment(Base):
         self.comment_body = comment_body
     
     def __repr__(self):
-        return f"{self.id} {self.comment_body}"      
+        return f"{self.id} {self.comment_body}"
+
+    def save(self):
+        session.add(self)
+        session.commit()      
+    
+    @staticmethod
+    def get_comment_list(comments) -> list:
+        l = []
+        for comm in comments:
+            l.append(comm.comment_body)
 

@@ -20,10 +20,13 @@ class UserCreateBase(BaseModel):
 class UserSignInBase(BaseModel):
     email: str
     password: str
- 
 
 
-def encodeJWT(userID: str):
+class CommentAddBase(BaseModel):
+    comment: str
+    
+
+def encodeJWT(userID: str) -> dict:
     payload = {
         "user_id" : userID,
     }
@@ -32,6 +35,6 @@ def encodeJWT(userID: str):
 
 
 
-def decodeJWT(token: str):
+def decodeJWT(token: str) -> dict:
     decoded_token = jwt.decode(jwt = token, key=SECRET_KEY, algorithms=ALGORITHM)
     return decoded_token

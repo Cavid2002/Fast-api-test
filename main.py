@@ -1,10 +1,17 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import RedirectResponse, HTMLResponse, JSONResponse 
 from werkzeug.security import generate_password_hash, check_password_hash
-from models import User,session
+from models import User,Comment,session
 from auth import *
 
+
 app = FastAPI()
+
+
+def get_user(token: str) -> User:
+    decoded = decodeJWT(token)
+    user = User.get_user_by_id(decoded["user_id"])
+    return user
 
 
 @app.post("/sign-up")
@@ -38,7 +45,10 @@ async def login(user_data: UserSignInBase):
         response.set_cookie(key="access_token", 
                             value=content["access_token"], 
                             max_age= 3600 * ACCESS_TOKEN_EXPIRE_HOURS)
-        return response        
+        return response
+    response = JSONResponse({ "msg" : "Enter email and password" }, status_code=200)
+    return response
+            
 
 
 @app.get("/main")
@@ -47,13 +57,18 @@ async def main(request: Request):
     if(cookie == None):
         return JSONResponse({"msg" : "You are not authorized!"}, status_code=401)
     else:
-        decoded = decodeJWT(cookie)
-        print(decoded)
-        current_user = User.get_user_by_id(decoded["user_id"])
+        current_user = get_user(cookie)
+        comments = session.query(Comment).filter(Comment.user_id == current_user.id)
+        comment_list = []
+        for com in comments:
+            comment_list.append(com.comment_body)
         res = { "Username" : current_user.username, 
                "Age" : current_user.age, 
-               "Gender" : current_user.gender}
+               "Gender" : current_user.gender,
+               "Comments" : comment_list}
         return JSONResponse(res)
+
+
 
 @app.get("/logout")
 async def logout():
@@ -62,3 +77,12 @@ async def logout():
     return res
         
 			
+@app.post("/main/comment")
+async def comment(comment: CommentAddBase, request: Request):
+    cookie = request.cookies.get("access_token")
+    if(cookie == None):
+        return JSONResponse({"msg" : "You are not authorized!"}, status_code=401)
+    current_user = get_user(cookie)
+    new_comment = Comment(user_id=current_user.id, comment_body=comment.comment)
+    new_comment.save()
+    return JSONResponse({ "msg" : "comment added!" }, status_code=200)
