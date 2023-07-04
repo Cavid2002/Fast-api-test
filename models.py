@@ -69,4 +69,6 @@ class Comment(Base):
         l = []
         for comm in comments:
             l.append(comm.comment_body)
+        
+        return l
 
