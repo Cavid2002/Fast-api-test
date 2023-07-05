@@ -32,6 +32,11 @@ async def signUp(new_user: UserCreateBase):
 
 
 
+@app.post("/sign-up/{token}")
+async def creation_verification(token: str):
+    pass
+
+
 
 @app.post("/")
 async def login(user_data: UserSignInBase):
@@ -42,9 +47,9 @@ async def login(user_data: UserSignInBase):
     if(check_password_hash(user.password, user_data.password)):
         content = encodeJWT(user.id)
         response = JSONResponse({"msg" : "Signed in"})
-        response.set_cookie(key="access_token", 
-                            value=content["access_token"], 
-                            max_age= 3600 * ACCESS_TOKEN_EXPIRE_HOURS)
+        response.set_cookie(key = "access_token", 
+                            value = content["access_token"], 
+                            max_age = 3600 * ACCESS_TOKEN_EXPIRE_HOURS)
         return response
     response = JSONResponse({ "msg" : "Enter email and password" }, status_code=200)
     return response
@@ -81,7 +86,7 @@ async def logout():
 async def comment(comment: CommentAddBase, request: Request):
     cookie = request.cookies.get("access_token")
     if(cookie == None):
-        return JSONResponse({"msg" : "You are not authorized!"}, status_code=401)
+        return JSONResponse({ "msg" : "You are not authorized!" }, status_code=401)
     current_user = get_user(cookie)
     new_comment = Comment(user_id=current_user.id, comment_body=comment.comment)
     new_comment.save()
