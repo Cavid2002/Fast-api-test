@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field
 from os import urandom
 from time import time
-from os import getenv
+from os import getenv,urandom
 import jwt
 
 
@@ -26,15 +26,18 @@ class CommentAddBase(BaseModel):
     comment: str
     
 
-def encodeJWT(userID: str) -> dict:
+def encodeJWT(key: str, val) -> dict:
     payload = {
-        "user_id" : userID,
+        key : val,
     }
     token = jwt.encode(payload=payload, key=SECRET_KEY, algorithm=ALGORITHM)
-    return {"access_token" : token}
+    return {"encoded_token" : token}
 
 
 
 def decodeJWT(token: str) -> dict:
     decoded_token = jwt.decode(jwt = token, key=SECRET_KEY, algorithms=ALGORITHM)
     return decoded_token
+
+
+
