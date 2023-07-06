@@ -66,9 +66,9 @@ class Comment(Base):
     
     @staticmethod
     def get_comment_list(comments) -> list:
-        l = []
+        comment_list = []
         for comm in comments:
-            l.append(comm.comment_body)
+            comment_list.append(comm.comment_body)
         
-        return l
+        return comment_list
 
