@@ -50,6 +50,7 @@ async def creation_verification(token: str, request: Request):
     if(cookie_token == None):
         return JSONResponse({ "msg" : "No token found"})
     decoded = decodeJWT(cookie_token)
+    print("HELLO", cookie_token)
     if(decoded['vefirication_token'] != token):
         return JSONResponse({ "msg" : "Invalid token"})
     decoded_data = decodeJWT(request.cookies.get("data_token"))
