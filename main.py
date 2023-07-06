@@ -9,7 +9,7 @@ DOMAIN = "127.0.0.1:8000"
 app = FastAPI()
 
 
-async def get_user(token: str) -> User:
+def get_user(token: str) -> User:
     decoded = decodeJWT(token)
     user = User.get_user_by_id(decoded["user_id"])
     return user
@@ -39,7 +39,7 @@ async def signUp(new_user: UserCreateBase):
     response.set_cookie(key = "data_token", 
                         value = data_token["encoded_token"], 
                         max_age = 1000)
-    response.set_cookie(key = "verify", value = verification_token, max_age = 1000)
+    response.set_cookie(key = "verify", value = verification_token['encoded_token'], max_age = 1000)
     return response
 
 
@@ -49,19 +49,23 @@ async def creation_verification(token: str, request: Request):
     cookie_token = request.cookies.get("verify")
     if(cookie_token == None):
         return JSONResponse({ "msg" : "No token found"})
+    print(cookie_token)
     decoded = decodeJWT(cookie_token)
-    print("HELLO", cookie_token)
     if(decoded['vefirication_token'] != token):
         return JSONResponse({ "msg" : "Invalid token"})
     decoded_data = decodeJWT(request.cookies.get("data_token"))
+    print(decoded_data)
     user_data = decoded_data["user_data"]
     user = User(username=user_data["username"],
-                password=generate_password_hash(user_data["password"]),
+                password=user_data["password"],
                 age=user_data["age"],
                 gender=user_data["gender"],
                 mail=user_data["email"])
     user.save()
-    return JSONResponse({ "msg" : "New user is added!"})
+    response = JSONResponse({ "msg" : "New user is added!"}, status_code = 200)
+    response.delete_cookie("data_token")
+    response.delete_cookie("verify")
+    return response
 
 
 
@@ -80,7 +84,7 @@ async def login(user_data: UserSignInBase):
                             value = content["encoded_token"], 
                             max_age = 3600 * ACCESS_TOKEN_EXPIRE_HOURS)
         return response
-    response = JSONResponse({ "msg" : "Enter email and password" }, status_code=200)
+    response = JSONResponse({ "msg" : "Invalid email or password" }, status_code=200)
     return response
             
 
@@ -91,6 +95,7 @@ async def main(request: Request):
     if(cookie == None):
         return JSONResponse({"msg" : "You are not authorized!"}, status_code=401)
     current_user = get_user(cookie)
+    print(cookie)
     comments = session.query(Comment).filter(Comment.user_id == current_user.id)
     comment_list = []
     for com in comments:
